@@ -71,7 +71,7 @@ function InvenioFilesCtrl($rootScope, $scope, $q, $timeout,
         // Get the bucket
         vm.invenioFilesArgs.url = response.data.links.bucket;
         // Upadate the endpoints
-        $rootScope.$broadcast(
+        $scope.$broadcast(
           'invenio.records.endpoints.updated', response.data.links
         );
         deferred.resolve({});
@@ -136,7 +136,7 @@ function InvenioFilesCtrl($rootScope, $scope, $q, $timeout,
     );
 
     if (Object.keys(links).length > 0) {
-      $rootScope.$broadcast(
+      $scope.$broadcast(
         'invenio.records.endpoints.updated', links
       );
     }
@@ -222,8 +222,10 @@ function InvenioFilesCtrl($rootScope, $scope, $q, $timeout,
     * @function addFiles
     */
   function addFiles(files) {
+    var newFiles = [];
     angular.forEach(files, function(file, index) {
       if (_.findWhere(vm.files, {key: file.key}) === undefined) {
+        newFiles.push(file);
         // Add any extra metadata to the File object
         angular.forEach(fileReducer(file), function(value, key) {
           file[key] = value;
@@ -234,6 +236,9 @@ function InvenioFilesCtrl($rootScope, $scope, $q, $timeout,
         Uploader.pushToQueue(file);
       }
     });
+    if (newFiles.length) {
+        $scope.$broadcast('invenio.uploader.file.added', newFiles);
+    }
   }
 
   /**
@@ -457,7 +462,7 @@ function InvenioFilesCtrl($rootScope, $scope, $q, $timeout,
   );
 
   // When the bucket_id is empty we should retrieve it from events
-  $rootScope.$on(
+  $scope.$on(
     'invenio.records.endpoints.updated', invenioFilesEndpointsUpdated
   );
 
